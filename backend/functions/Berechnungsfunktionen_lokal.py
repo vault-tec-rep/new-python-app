@@ -94,12 +94,11 @@ def wetter_waehlen(tamb, global_str, dhi):
 def berechnung_pv_vektor(dirh, dhi, tamb, zeit_vektor, breite, laenge, kW):
     import numpy as np
     import copy
-    from Allgemeine_Funktionen import poa, pv_syst
 
     azimuth = 90
     aufstellwinkel = 15
     logisch_doppelte_rechnung = 1
-    
+
     if logisch_doppelte_rechnung == 0:
         # Einstrahlung
         ghi_generatorebene = poa(
