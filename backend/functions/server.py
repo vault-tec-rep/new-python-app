@@ -3,7 +3,7 @@ from flask_cors import CORS, cross_origin
 #Für Deployment
 #from Berechnung_Funktionen import berechnung_ev, berechnung_ms, berechnung_gw_ev, berechnung_gw_ds, berechnung_gw_ve
 #Für ng-serve testen
-from Berechnungsfunktionen_lokal import berechnung_ev, berechnung_ms
+from Berechnungsfunktionen_lokal import berechnung
 app = Flask(__name__)
 CORS(app)
 
@@ -14,7 +14,7 @@ def ev():
             return _build_cors_preflight_response()
     elif request.method == "POST": #Actual request following the preflight
         datei = request.get_json()
-        [barwert, rendite, gewinnkurve, eigenverbrauchsanteil, autarkiegrad, stromgestehungskosten] = berechnung_ev(datei.get("wetterstation"), datei.get("kW"), datei.get("jahresstromverbrauch"), datei.get("strompreis"), 
+        [barwert, rendite, gewinnkurve, eigenverbrauchsanteil, autarkiegrad, stromgestehungskosten] = berechnung(datei.get("wetterstation"), datei.get("kW"), datei.get("jahresstromverbrauch"), datei.get("strompreis"), 
         datei.get("ausrichtung"), datei.get("aufstellwinkel"), datei.get("kalkZins"), datei.get("strompreissteigerung"), datei.get("speicher_kWh"), 
         datei.get("dachart"), datei.get("aufstaenderung"), datei.get("dachhaelfte"), 
         datei.get("invest_parameter"), datei.get("betrieb_parameter"), datei.get("zusatzkosten"), datei.get("einspeiseverguetung"), datei.get("absolute_kosten"))
