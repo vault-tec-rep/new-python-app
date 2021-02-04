@@ -1,0 +1,104 @@
+.flex-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-top: 1rem;
+}
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.wrapper {
+    display: inline-block;
+}
+
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.radio-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.margin-05-right {
+    margin-right: 0.2rem;
+}
+
+.margin-05-left {
+    margin-left: 0.2rem;
+}
+
+.margin-05-top {
+    margin-top: 0.2rem;
+}
+
+.margin-zero {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.row-wrapper {
+    align-items: center;
+    justify-content: space-between;
+    display: flex;
+}
+
+.button-save {
+    display: flex;
+    flex-direction: row;
+    margin-top: 1rem;
+}
+
+.mat-icon {
+    margin-right: 0.5rem;
+}
+
+.form-field {
+    width: 100px; 
+    margin-right: 0.4rem;
+}
+
+.slider {
+    margin-left: 0.2rem;
+    width: 300px;
+}
+.gauge {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.input {
+    margin-right: 0.2rem;
+    width: 100px;
+}
+
+::ng-deep .mat-slider-thumb-label {
+    transform: rotate(45deg) !important;
+    border-radius: 50% 50% 0 !important;
+}
+
+::ng-deep .mat-slider-thumb {
+    transform: scale(0) !important;
+}
+
+::ng-deep .mat-slider-thumb-label-text {
+    opacity: 1 !important;
+}

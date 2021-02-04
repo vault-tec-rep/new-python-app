@@ -1,7 +1,7 @@
 #Berechnungsfunktionen der Geschäftsmodelle. Die Funktionen greifen auf weiter unten definierte Funktionen zurück. 
 #%%
 def berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbrauch, lastprofilNummer,
-                einspeiseverguetungVektor, i_teilnehmer, mieterstromzuschlag, spez_kosten_pv, geschäftsmodell, schule):
+                einspeiseverguetungVektor, i_teilnehmer, spez_kosten_pv, geschäftsmodell, schule):
     import numpy as np
     import pandas as pd
 
@@ -285,7 +285,7 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
     
     if geschäftsmodell == 1:
         #Annahmen
-        mieterstrom_zuschlag = 'Ja' #Mieterstromzuschlag auf Ja. Ändert aber nicht allzu viel. 
+        mieterstrom_zuschlag = 'Ja' #Mieterstromzuschlag auf Ja. 
         betreiber = 'betreiber-0' #Eigentümer und Betreiber der Anlage ohne Pacht
         # Variablen statt festen Werten
         dt_min = 60  # Zeitschrittweite in Minuten
@@ -499,5 +499,5 @@ schule = 0
 
 geschäftsmodell = 2
 [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbrauch, lastprofilNummer,
-                einspeiseverguetungVektor, i_teilnehmer, mieterstromzuschlag, spez_kosten_pv, geschäftsmodell, schule)
+                einspeiseverguetungVektor, i_teilnehmer, spez_kosten_pv, geschäftsmodell, schule)
 # %%

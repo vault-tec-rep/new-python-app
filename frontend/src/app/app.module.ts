@@ -25,12 +25,14 @@ import { MainComponent } from './main/main.component';
 //echarts
 import { NgxEchartsModule } from 'ngx-echarts';
 import * as echarts from 'echarts';
+import { DurchschnittstagGraphComponent } from './charts/durchschnittstag-graph/durchschnittstag-graph.component';
 //chart components
 
 @NgModule({
   declarations: [
     AppComponent,
     MainComponent,
+    DurchschnittstagGraphComponent,
   ],
   imports: [
     //angular modules

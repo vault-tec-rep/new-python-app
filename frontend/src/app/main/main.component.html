@@ -1,1 +1,179 @@
-<p>main works!</p>
+<div class="container-fluid">
+    <form [formGroup]="berechnungForm_main">
+        <div class="formGroup">
+            <div class="row no-gutters flex-row">
+                <!-- Auswahlelemente-->
+                <div class="col-md-4">
+                    <!-- Slider: Lastprofil -->
+                    <div class="row-wrapper">
+                        <span class="wrapper">
+                            <mat-icon svgIcon="custom-apartement"></mat-icon>
+                            <label class="margin-05-right">Lastprofil</label>
+                        </span>
+                        <mat-form-field appearance="fill" style="width: 300px;">
+                            <mat-select (selectionChange)="lastprofil_change($event.value)" formControlName="lastprofil_control">
+                                <mat-option *ngFor="let lastprofil of lastprofil_auswahl" [value]="lastprofil.value">
+                                    {{lastprofil.viewValue}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <!-- Input Feld: Dachgröße -->
+                    <div class="row-wrapper">
+                        <span class="wrapper">
+                            <mat-icon svgIcon="custom-apartement"></mat-icon>
+                            <label class="margin-05-right">Dachgröße in Quadratmeter</label>
+                        </span>
+                        <mat-form-field class="form-field">
+                            <mat-label>m^2</mat-label>
+                            <input matInput formControlName="dachgröße_control" min="1" max="10000"
+                                class="input" type="number">
+                        </mat-form-field>
+                    </div>
+                    <!-- Slider: Leistung -->
+                    <div class="row-wrapper">
+                        <span class="wrapper">
+                            <mat-icon svgIcon="custom-sun"></mat-icon>
+                            <label class="margin-05-right">PV-Leistung in kW</label>
+                        </span>
+                        <mat-slider class="slider" formControlName="leistung_slider_control" thumbLabel tickInterval="1"
+                            min="1" max="300">
+                        </mat-slider>
+                    </div>                        
+                    <!-- Input Feld: Jahresstromverbrauch -->
+                    <div *ngIf="!mehrfamilienhaus_boolean" class="row-wrapper">
+                        <span class="wrapper">
+                            <mat-icon svgIcon="custom-energy"></mat-icon>
+                            <label class="margin-05-right">Jahresstromverbrauch in kWh</label>
+                        </span>
+                        <mat-form-field class="form-field">
+                            <mat-label>kWh</mat-label>
+                            <input matInput formControlName="jahresstromverbrauch_control" min="1" max="100000"
+                                class="input" type="number">
+                        </mat-form-field>
+                    </div>
+                    <!-- Input Feld: Wohneinheiten -->
+                    <div *ngIf="mehrfamilienhaus_boolean" class="div">
+                        <div class="row-wrapper">
+                            <span class="wrapper">
+                                <mat-icon svgIcon="custom-apartement"></mat-icon>
+                                <label class="margin-05-right">Wohneinheiten</label>
+                            </span>
+                            <mat-form-field class="form-field">
+                                <mat-label>kWh</mat-label>
+                                <input matInput formControlName="wohneinheiten_control" min="1" max="20"
+                                    class="input" type="number">
+                            </mat-form-field>
+                        </div>
+                        <!-- Input Feld: Teilnahme % -->
+                        <div class="row-wrapper">
+                            <span class="wrapper">
+                                <mat-icon svgIcon="custom-energy"></mat-icon>
+                                <label class="margin-05-right">teilnehmende Wohneinheiten in %</label>
+                            </span>
+                            <mat-form-field class="form-field">
+                                <mat-label>kWh</mat-label>
+                                <input matInput formControlName="teilnahme_prozent_control" min="1" max="100000"
+                                    class="input" type="number">
+                            </mat-form-field>
+                        </div>
+                    </div>
+  
+                    <!-- Slider: Strompreis -->
+                    <div class="row-wrapper">
+                        <span class="wrapper">
+                            <mat-icon svgIcon="custom-euro"></mat-icon>
+                            <label class="margin-05-right">Strompreis in Euro</label>
+                        </span>
+                        <mat-slider class="slider" formControlName="strompreis_slider_control" thumbLabel tickInterval="1"
+                            min="1" max="100">
+                        </mat-slider>
+                    </div>  
+                    <!--Toggle Erweiterte Einstellungen-->
+                    <div class="row-wrapper">
+                        <span class="wrapper">
+                            <mat-icon svgIcon="custom-cog"></mat-icon>
+                            <label class="margin-05-right">Erweiterte Einstellungsmöglichkeiten anzeigen</label>
+                        </span>
+                        <mat-slide-toggle (change)="onErweiterteEinstellungenChange()" class="form-field">
+                        </mat-slide-toggle>
+                    </div>
+                    <!--Button berechnen-->
+                    <div class="button-save">
+                        <button mat-raised-button (click)="berechnungSenden()" style="margin-right: 2rem;"
+                            color="primary" [disabled]="!berechnungForm_main.valid">Berechnen</button>
+                    </div>
+                </div>
+                <!-- Visualisierung-->
+                <div class="col-md-8">
+                    
+                </div>
+            </div>
+            <div *ngIf="erweiterte_einstellungen_boolean" class="row no-gutters flex-row">
+                <div class="col-md-3">
+                    <span class="wrapper">
+                        <label class="margin-05-right">Strompreissteigerung in %</label>
+                        <mat-form-field style="width: 50px;">
+                            <mat-label>%</mat-label>
+                            <input matInput formControlName="strompreissteigerung_control" min="0" max="200"
+                                class="margin-05-right" style="width: 50px" type="number" step="1">
+                        </mat-form-field>
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <span class="wrapper">
+                        <label class="margin-05-right">Kalkulatorischer Zins in %</label>
+                        <mat-form-field style="width: 50px;">
+                            <mat-label>%</mat-label>
+                            <input matInput formControlName="kalk_zins_control" min="0" max="200"
+                                class="margin-05-right" style="width: 50px" type="number" step="1">
+                        </mat-form-field>
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <span class="wrapper">
+                        <label class="margin-05-right">Spezfische Kosten pro kW</label>
+                        <mat-form-field style="width: 50px;">
+                            <mat-label>Euro</mat-label>
+                            <input matInput formControlName="spez_kosten_pv_control" min="1" max="10000"
+                                class="margin-05-right" style="width: 50px" type="number" step="1">
+                        </mat-form-field>
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <span class="wrapper">
+                        <label class="margin-05-right">Einspeisevergütungen in ct/kWh:</label>
+                    </span>
+                    <span class="wrapper">
+                        <mat-form-field class="form-field">
+                            <mat-label>< 10 kW</mat-label>
+                            <input matInput formControlName="Einspeisung_A" min="0" max="50" step="0.01"
+                                class="input" type="number">
+                        </mat-form-field>
+                        <mat-form-field class="form-field">
+                            <mat-label>10 - 40 kW</mat-label>
+                            <input matInput formControlName="Einspeisung_B" min="0" max="50" step="0.01"
+                                class="input" type="number">
+                        </mat-form-field>
+                        <mat-form-field class="form-field">
+                            <mat-label>40 - 750 kW</mat-label>
+                            <input matInput formControlName="Einspeisung_C" min="0" max="1" step="0.01"
+                                class="input" type="number">
+                        </mat-form-field>
+                    </span>
+                </div>
+            </div>
+            <!--Ergebnisdarstellung (Barwert etc)-->
+            <div class="row no-gutters flex-row">
+                <!--Darstellung und Beschreibung der Ergebnisse-->
+                <div class="col-md-8">
+
+                </div>
+                <!--Speichern der Ergebnisse (Ausgabe als xlsx)-->
+                <div class="col-md-4">
+
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
