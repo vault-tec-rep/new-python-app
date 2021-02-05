@@ -1,6 +1,7 @@
 //Notwendige Imports anderer Komponenten
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { DurchschnittstagGraphComponent } from '../charts/durchschnittstag-graph/durchschnittstag-graph.component';
 import { HttpService } from '../services/http.service';
 import { CustomIconService } from '../services/icon.service';
 
@@ -24,6 +25,8 @@ export class MainComponent implements OnInit {
   erweiterte_einstellungen_boolean: boolean = false;
   mehrfamilienhaus_boolean: boolean = false;
   schule_number_boolean: number = 0;
+
+  @ViewChild(DurchschnittstagGraphComponent) chart_durchschnittsgraph: DurchschnittstagGraphComponent;
 
   //Lastprofil
   lastprofil_auswahl: Lastprofil[] = [
@@ -86,6 +89,20 @@ export class MainComponent implements OnInit {
     else {
       this.mehrfamilienhaus_boolean = false;
     }
+  }
+
+  chart_durchschnittstag_aktualisieren(y_pv: Array<number>, y_last: Array<number>) {
+    let x_werte: number = 0;
+    let wertepaare_pv: Array<number[]> = [];
+    let wertepaare_last: Array<number[]> = [];
+
+
+    while (x_werte < y_last.length) {
+      wertepaare_pv[x_werte] = [x_werte, y_pv[x_werte]];
+      wertepaare_last[x_werte] = [x_werte, y_last[x_werte]];
+      x_werte++;
+    }
+    this.chart_durchschnittsgraph.aktualisiere_chart(wertepaare_pv, wertepaare_last, y_last.length);
   }
 
   onErweiterteEinstellungenChange() {

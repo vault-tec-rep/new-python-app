@@ -218,6 +218,22 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
     return DFOut
 
+def durchschnittstag_berechnen(pv_werte, last_werte):
+    import numpy as np
+    
+    #Berechnung des Durchnittstages
+    durchschnitsstag_pv = pv_werte.sum(axis=1) / 365
+    durchschnittstag_last = last_werte.sum(axis=1) / 365
+
+    if len(durchschnittstag_last < 1440):
+        durchschnitsstag_pv = durchschnitsstag_pv[0::15].copy()
+    
+    return durchschnitsstag_pv, durchschnittstag_last
+
+    
+
+
+
 
 #Unterfunktionen, die von den oberen beiden Berechnungsfunktionen aufgerufen werden
 def oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, geschäftsmodell):
