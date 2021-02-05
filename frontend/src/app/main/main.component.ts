@@ -26,6 +26,14 @@ export class MainComponent implements OnInit {
   mehrfamilienhaus_boolean: boolean = false;
   schule_number_boolean: number = 0;
 
+  //Ergebnisse
+  barwert_mieterstrom: number;
+  barwert_eigenverbrauch: number;
+  eigenverbrauchsanteil: number;
+  autarkiegrad: number;
+  durchschnittstag_pv: number[];
+  durchschnittstag_last: number[];
+
   @ViewChild(DurchschnittstagGraphComponent) chart_durchschnittsgraph: DurchschnittstagGraphComponent;
 
   //Lastprofil
@@ -68,6 +76,8 @@ export class MainComponent implements OnInit {
       'wohneinheiten_control': new FormControl(10, [Validators.required, Validators.min(1), Validators.max(20)]),
       'teilnahme_prozent_control': new FormControl(50, [Validators.required, Validators.min(1), Validators.max(100)])
     });
+    localStorage.setItem("schule", JSON.stringify(0));
+    localStorage.setItem("geschäftsmodell", JSON.stringify(2));
   }
 
 
@@ -77,17 +87,33 @@ export class MainComponent implements OnInit {
     //Über subscribe wird auf die Antwort des Backends gewartet. Die Antwort wird in result gespeichert und anschließend der Code nach dem Pfeil ausgeführt
     this.httpService.httpPost(this.berechnungForm_main).subscribe(result => {
       //Entpacken der Antwort
-
+      this.barwert_mieterstrom = result[0];
+      this.barwert_eigenverbrauch = result[1];
+      this.eigenverbrauchsanteil = result[2];
+      this.autarkiegrad = result[3];
+      this.durchschnittstag_pv = result[4];
+      this.durchschnittstag_last = result[5];
       //Aktualisieren der Visualisierung
+      this.chart_durchschnittstag_aktualisieren(this.durchschnittstag_pv, this.durchschnittstag_last);
+
     })
   }
 
   lastprofil_change(value: number) {
     if (value == 1) {
       this.mehrfamilienhaus_boolean = true;
+      localStorage.setItem("geschäftsmodell", JSON.stringify(1));
     }
     else {
       this.mehrfamilienhaus_boolean = false;
+      localStorage.setItem("geschäftsmodell", JSON.stringify(2))
+    }
+
+    if(value == 0) {
+      localStorage.setItem("schule", JSON.stringify(1))
+    }
+    else {
+      localStorage.setItem("schule", JSON.stringify(0))
     }
   }
 

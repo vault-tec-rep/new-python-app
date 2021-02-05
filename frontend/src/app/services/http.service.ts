@@ -36,8 +36,8 @@ export class HttpService {
         data.einspeiseverguetungVektor = form.controls["einspeiseverguetungVektor"].value;
         data.i_teilnehmer = Math.ceil(form.controls["wohneinheiten_control"].value * (form.controls["teilnahme_prozent_control"].value / 100));
         data.spez_kosten_pv = form.controls["spez_kosten_pv_control"].value;
-        data.geschäftsmodell = JSON.parse(localStorage.getItem("geschäftsmodell"));
         data.schule = JSON.parse(localStorage.getItem("schule"));
+        data.geschäftsmodell = JSON.parse(localStorage.getItem("geschäftsmodell"));
 
         return this.httpClient.post<any>(this.baseURL+'/main', data);
     }

@@ -14,11 +14,11 @@ def main_berechnung():
             return _build_cors_preflight_response()
     elif request.method == "POST": #Actual request following the preflight
         datei = request.get_json()
-        [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = berechnung(datei.get("strompreis"), datei.get("kW"), datei.get("strompreissteigerung"), 
+        [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last] = berechnung(datei.get("strompreis"), datei.get("kW"), datei.get("strompreissteigerung"), 
             datei.get("kalkZins"), datei.get("jahresstromverbrauch"), datei.get("lastprofilNummer"), datei.get("einspeiseverguetungVektor"), datei.get("i_teilnehmer"),
             datei.get("spez_kosten_pv"), datei.get("geschäftsmodell"), datei.get("schule"))
 
-        ergebnis = [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad]
+        ergebnis = [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last]
         return _corsify_actual_response(jsonify(ergebnis))
     else:
         raise Exception('Mein eigener Fehler in /ev')

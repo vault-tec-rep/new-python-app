@@ -19,7 +19,8 @@ def berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbra
         eco_eigenverbrauch = {}
         eco_mieterstrom = oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, geschäftsmodell)
         [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenverbrauch, kW, kalkZins, einspeiseverguetungVektor, geschäftsmodell, schule, jahresstromverbrauch)
-        return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad
+        [durchschnittstag_pv, durchschnittstag_last] = durchschnittstag_berechnen(leistung_pv, leistung_last)
+        return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last
 
     elif geschäftsmodell == 2: # Gewerbe oder NWG
         Lastprofile_GW = np.load('D:\\Solarspeichersysteme\\09_Projekte\\2016_PV2City\\2018_10 Leitfaden Eigenverbrauch\\App-Entwicklung\\Unabhaengigkeitsrechner_Python\\Daten Wetter und Last\\Lastprofile_Gewerbe.npy', allow_pickle=True)
@@ -28,7 +29,9 @@ def berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbra
         eco_mieterstrom= oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, 1)
         eco_eigenverbrauch = oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, 2)
         [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenverbrauch, kW, kalkZins, einspeiseverguetungVektor, geschäftsmodell, schule, jahresstromverbrauch)
-        return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad
+        [durchschnittstag_pv, durchschnittstag_last] = durchschnittstag_berechnen(leistung_pv, leistung_last)
+        return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last
+
     else:
          raise Exception('Fehler in Berechnungsfunktion. Geschäftsmodell falsch übergeben.')
 
@@ -221,13 +224,17 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 def durchschnittstag_berechnen(pv_werte, last_werte):
     import numpy as np
     
-    #Berechnung des Durchnittstages
-    durchschnitsstag_pv = pv_werte.sum(axis=1) / 365
-    durchschnittstag_last = last_werte.sum(axis=1) / 365
+    if len(last_werte < 525600):
+        pv_werte2 = np.reshape(pv_werte, (96, 365))
+        last_werte2 = np.reshape(last_werte, (96, 365))
+    else:
+        pv_werte2 = np.reshape(pv_werte, (1440, 365))
+        last_werte2 = np.reshape(last_werte, (1440, 365))
 
-    if len(durchschnittstag_last < 1440):
-        durchschnitsstag_pv = durchschnitsstag_pv[0::15].copy()
-    
+    #Berechnung des Durchnittstages
+    durchschnitsstag_pv = pv_werte2.sum(axis=1) / 365
+    durchschnittstag_last = last_werte2.sum(axis=1) / 365
+
     return durchschnitsstag_pv, durchschnittstag_last
 
     
@@ -514,6 +521,7 @@ spez_kosten_pv = 1450
 schule = 0
 
 geschäftsmodell = 2
-[barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbrauch, lastprofilNummer,
+[barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last] = berechnung(strompreis, kW, strompreissteigerung, 
+                kalkZins, jahresstromverbrauch, lastprofilNummer,
                 einspeiseverguetungVektor, i_teilnehmer, spez_kosten_pv, geschäftsmodell, schule)
 # %%
