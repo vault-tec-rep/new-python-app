@@ -18,6 +18,8 @@ def main_berechnung():
             datei.get("kalkZins"), datei.get("jahresstromverbrauch"), datei.get("lastprofilNummer"), datei.get("einspeiseverguetungVektor"), datei.get("i_teilnehmer"),
             datei.get("spez_kosten_pv"), datei.get("geschäftsmodell"), datei.get("schule"))
 
+        durchschnittstag_pv = durchschnittstag_pv.tolist()
+        durchschnittstag_last = durchschnittstag_last.tolist()
         ergebnis = [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last]
         return _corsify_actual_response(jsonify(ergebnis))
     else:

@@ -4,6 +4,16 @@
     justify-content: center;
     margin-top: 1rem;
 }
+.flex-row-baseline {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+.flex-row-left {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+}
 .flex-column {
     display: flex;
     flex-direction: column;

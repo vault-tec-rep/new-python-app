@@ -65,14 +65,14 @@ export class MainComponent implements OnInit {
       'leistung_slider_control': new FormControl(10, Validators.required),
       'jahresstromverbrauch_control': new FormControl(3000, [Validators.required, Validators.min(1), Validators.max(100000)]),
       'dachgröße_control': new FormControl(20, [Validators.required, Validators.min(1), Validators.max(10000)]), 
-      'strompreis_slider_control': new FormControl(28, Validators.required),
+      'strompreis_control': new FormControl(28, Validators.required),
       'lastprofil_control': new FormControl(2, Validators.required),
       'strompreissteigerung_control': new FormControl(2, [Validators.required, Validators.min(0), Validators.max(200)]),
       'kalk_zins_control': new FormControl(2, [Validators.required, Validators.min(0), Validators.max(200)]),
       'spez_kosten_pv_control': new FormControl(1000, [Validators.required, Validators.min(0), Validators.max(10000)]),
-      'Einspeisung_A': new FormControl(9.30, [Validators.required, Validators.min(0), Validators.max(50)]),
-      'Einspeisung_B': new FormControl(9.05, [Validators.required, Validators.min(0), Validators.max(50)]),
-      'Einspeisung_C': new FormControl(7.19, [Validators.required, Validators.min(0), Validators.max(50)]),
+      'Einspeisung_A_control': new FormControl(9.30, [Validators.required, Validators.min(0), Validators.max(50)]),
+      'Einspeisung_B_control': new FormControl(9.05, [Validators.required, Validators.min(0), Validators.max(50)]),
+      'Einspeisung_C_control': new FormControl(7.19, [Validators.required, Validators.min(0), Validators.max(50)]),
       'wohneinheiten_control': new FormControl(10, [Validators.required, Validators.min(1), Validators.max(20)]),
       'teilnahme_prozent_control': new FormControl(50, [Validators.required, Validators.min(1), Validators.max(100)])
     });
@@ -102,21 +102,21 @@ export class MainComponent implements OnInit {
   lastprofil_change(value: number) {
     if (value == 1) {
       this.mehrfamilienhaus_boolean = true;
-      localStorage.setItem("geschäftsmodell", JSON.stringify(1));
     }
     else {
       this.mehrfamilienhaus_boolean = false;
-      localStorage.setItem("geschäftsmodell", JSON.stringify(2))
-    }
-
-    if(value == 0) {
-      localStorage.setItem("schule", JSON.stringify(1))
-    }
-    else {
-      localStorage.setItem("schule", JSON.stringify(0))
     }
   }
 
+  dachgroesse_change() {
+    let dachgröße_wert: number;
+    let ungerundeter_wert: number;
+
+    //Berechnung
+    ungerundeter_wert = this.berechnungForm_main.controls["dachgröße_control"].value / 6.5;
+    dachgröße_wert = Math.ceil(ungerundeter_wert);
+    this.berechnungForm_main.controls["leistung_slider_control"].setValue(dachgröße_wert);
+  }
   chart_durchschnittstag_aktualisieren(y_pv: Array<number>, y_last: Array<number>) {
     let x_werte: number = 0;
     let wertepaare_pv: Array<number[]> = [];

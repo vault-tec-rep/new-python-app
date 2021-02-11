@@ -29,7 +29,7 @@
                         </span>
                         <mat-form-field class="form-field">
                             <mat-label>m^2</mat-label>
-                            <input matInput formControlName="dachgröße_control" min="1" max="10000"
+                            <input matInput (change)="dachgroesse_change()" formControlName="dachgröße_control" min="1" max="10000"
                                 class="input" type="number">
                         </mat-form-field>
                     </div>
@@ -88,7 +88,7 @@
                             <mat-icon svgIcon="custom-euro"></mat-icon>
                             <label class="margin-05-right">Strompreis in Euro</label>
                         </span>
-                        <mat-slider class="slider" formControlName="strompreis_slider_control" thumbLabel tickInterval="1"
+                        <mat-slider class="slider" formControlName="strompreis_control" thumbLabel tickInterval="1"
                             min="1" max="100">
                         </mat-slider>
                     </div>  
@@ -101,19 +101,17 @@
                         <mat-slide-toggle (change)="onErweiterteEinstellungenChange()" class="form-field">
                         </mat-slide-toggle>
                     </div>
-                    <!--Button berechnen-->
-                    <div class="button-save">
-                        <button mat-raised-button (click)="berechnungSenden()" style="margin-right: 2rem;"
-                            color="primary" [disabled]="!berechnungForm_main.valid">Berechnen</button>
-                    </div>
                 </div>
                 <!-- Visualisierung-->
                 <div class="col-md-8">
                     <app-durchschnittstag-graph></app-durchschnittstag-graph>
                 </div>
             </div>
-            <div *ngIf="erweiterte_einstellungen_boolean" class="row no-gutters flex-row">
-                <div class="col-md-3">
+            <div *ngIf="erweiterte_einstellungen_boolean" class="row no-gutters flex-row-baseline">
+                <div class="col-md-1">
+
+                </div>
+                <div class="col-md-2">
                     <span class="wrapper">
                         <label class="margin-05-right">Strompreissteigerung in %</label>
                         <mat-form-field style="width: 50px;">
@@ -123,7 +121,7 @@
                         </mat-form-field>
                     </span>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <span class="wrapper">
                         <label class="margin-05-right">Kalkulatorischer Zins in %</label>
                         <mat-form-field style="width: 50px;">
@@ -133,7 +131,7 @@
                         </mat-form-field>
                     </span>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <span class="wrapper">
                         <label class="margin-05-right">Spezfische Kosten pro kW</label>
                         <mat-form-field style="width: 50px;">
@@ -143,27 +141,33 @@
                         </mat-form-field>
                     </span>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-5">
                     <span class="wrapper">
                         <label class="margin-05-right">Einspeisevergütungen in ct/kWh:</label>
                     </span>
                     <span class="wrapper">
                         <mat-form-field class="form-field">
                             <mat-label>< 10 kW</mat-label>
-                            <input matInput formControlName="Einspeisung_A" min="0" max="50" step="0.01"
+                            <input matInput formControlName="Einspeisung_A_control" min="0" max="50" step="0.01"
                                 class="input" type="number">
                         </mat-form-field>
                         <mat-form-field class="form-field">
                             <mat-label>10 - 40 kW</mat-label>
-                            <input matInput formControlName="Einspeisung_B" min="0" max="50" step="0.01"
+                            <input matInput formControlName="Einspeisung_B_control" min="0" max="50" step="0.01"
                                 class="input" type="number">
                         </mat-form-field>
                         <mat-form-field class="form-field">
                             <mat-label>40 - 750 kW</mat-label>
-                            <input matInput formControlName="Einspeisung_C" min="0" max="1" step="0.01"
+                            <input matInput formControlName="Einspeisung_C_control" min="0" max="1" step="0.01"
                                 class="input" type="number">
                         </mat-form-field>
                     </span>
+                </div>
+            </div>
+            <div class="row no-gutters flex-row-left">
+                <!--Button berechnen-->
+                <div class="button-save">
+                    <button mat-raised-button (click)="berechnungSenden()" color="primary" [disabled]="!berechnungForm_main.valid">Berechnen</button>
                 </div>
             </div>
             <!--Ergebnisdarstellung (Barwert etc)-->

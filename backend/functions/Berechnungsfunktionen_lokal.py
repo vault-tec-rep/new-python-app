@@ -11,7 +11,6 @@ def berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbra
     zeit_vektor = pd.date_range('2010-01-01 00:00:00', '2010-12-31 23:59:00', freq='1min')
     [dirh, dhi, tamb, breite, laenge] = wetter_waehlen(air_temp, GlobalStr, DiffusStr)
     leistung_pv = berechnung_pv_vektor(dirh, dhi, tamb, zeit_vektor, breite, laenge, kW)
-    
     if geschäftsmodell == 1: # Mieterstrom
         Lastprofile_Mfh = np.load('D:\\Solarspeichersysteme\\09_Projekte\\2016_PV2City\\2018_10 Leitfaden Eigenverbrauch\\App-Entwicklung\\Unabhaengigkeitsrechner_Python\\Daten Wetter und Last\\Lastprofile_MFH.npy', allow_pickle=True)
         leistung_last = Lastprofile_Mfh[:, i_teilnehmer - 1]
@@ -19,17 +18,17 @@ def berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbra
         eco_eigenverbrauch = {}
         eco_mieterstrom = oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, geschäftsmodell)
         [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenverbrauch, kW, kalkZins, einspeiseverguetungVektor, geschäftsmodell, schule, jahresstromverbrauch)
-        [durchschnittstag_pv, durchschnittstag_last] = durchschnittstag_berechnen(leistung_pv, leistung_last)
+        [durchschnittstag_pv, durchschnittstag_last] = durchschnittstag_berechnen(leistung_pv, leistung_last, jahresstromverbrauch)
         return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last
 
     elif geschäftsmodell == 2: # Gewerbe oder NWG
         Lastprofile_GW = np.load('D:\\Solarspeichersysteme\\09_Projekte\\2016_PV2City\\2018_10 Leitfaden Eigenverbrauch\\App-Entwicklung\\Unabhaengigkeitsrechner_Python\\Daten Wetter und Last\\Lastprofile_Gewerbe.npy', allow_pickle=True)
-        leistung_last = Lastprofile_GW[:,lastprofilNummer]
+        leistung_last = Lastprofile_GW[:,lastprofilNummer-2]
 
         eco_mieterstrom= oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, 1)
         eco_eigenverbrauch = oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, 2)
         [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenverbrauch, kW, kalkZins, einspeiseverguetungVektor, geschäftsmodell, schule, jahresstromverbrauch)
-        [durchschnittstag_pv, durchschnittstag_last] = durchschnittstag_berechnen(leistung_pv, leistung_last)
+        [durchschnittstag_pv, durchschnittstag_last] = durchschnittstag_berechnen(leistung_pv, leistung_last, jahresstromverbrauch)
         return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last
 
     else:
@@ -221,26 +220,26 @@ def ephemeris(time, latitude, longitude, pressure=101325, temperature=12):
 
     return DFOut
 
-def durchschnittstag_berechnen(pv_werte, last_werte):
+def durchschnittstag_berechnen(pv_werte, last_werte, jahresstromverbrauch):
     import numpy as np
-    
-    if len(last_werte < 525600):
-        pv_werte2 = np.reshape(pv_werte, (96, 365))
-        last_werte2 = np.reshape(last_werte, (96, 365))
+    if len(last_werte) < 525600:
+        #Skalieren des Lastprofils
+        print("ICH BIN AM SKALIEREN SCURR")
+        last_werte_2 = np.divide(last_werte, np.sum(last_werte))
+        last_werte_3 = last_werte_2*jahresstromverbrauch*1000
+        print(sum(last_werte_3))
     else:
-        pv_werte2 = np.reshape(pv_werte, (1440, 365))
-        last_werte2 = np.reshape(last_werte, (1440, 365))
+        last_werte_3 = last_werte[0::15].copy()
+    
+    pv_werte_2 = pv_werte[0::15].copy()
+    pv_werte2 = np.reshape(pv_werte_2, (96, 365))
+    last_werte_4 = np.reshape(last_werte_3, (96, 365))
 
     #Berechnung des Durchnittstages
     durchschnitsstag_pv = pv_werte2.sum(axis=1) / 365
-    durchschnittstag_last = last_werte2.sum(axis=1) / 365
+    durchschnittstag_last = last_werte_4.sum(axis=1) / 365
 
     return durchschnitsstag_pv, durchschnittstag_last
-
-    
-
-
-
 
 #Unterfunktionen, die von den oberen beiden Berechnungsfunktionen aufgerufen werden
 def oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, geschäftsmodell):
@@ -508,20 +507,20 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
     else:
         raise Exception("Fehler in oekonomie_berechnen. Geschäftsmodell falsch ausgewählt")
 
-strompreis = 28
-kW = 15
-strompreissteigerung = 2
-kalkZins = 2
-jahresstromverbrauch = 30000
-lastprofilNummer = 1
-einspeiseverguetungVektor = [9.30, 9.05, 7.19]
-i_teilnehmer = 5
-mieterstromzuschlag = 'Ja'
-spez_kosten_pv = 1450
-schule = 0
+#strompreis = 28
+#kW = 15
+#strompreissteigerung = 2
+#kalkZins = 2
+#jahresstromverbrauch = 30000
+#lastprofilNummer = 1
+#einspeiseverguetungVektor = [9.30, 9.05, 7.19]
+#i_teilnehmer = 5
+#mieterstromzuschlag = 'Ja'
+#spez_kosten_pv = 1450
+#schule = 0
 
-geschäftsmodell = 2
-[barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last] = berechnung(strompreis, kW, strompreissteigerung, 
-                kalkZins, jahresstromverbrauch, lastprofilNummer,
-                einspeiseverguetungVektor, i_teilnehmer, spez_kosten_pv, geschäftsmodell, schule)
+#geschäftsmodell = 2
+#[barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last] = berechnung(strompreis, kW, strompreissteigerung, 
+                #kalkZins, jahresstromverbrauch, lastprofilNummer,
+                #einspeiseverguetungVektor, i_teilnehmer, spez_kosten_pv, geschäftsmodell, schule)
 # %%
