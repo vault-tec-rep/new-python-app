@@ -224,9 +224,8 @@ def durchschnittstag_berechnen(pv_werte, last_werte, jahresstromverbrauch):
     import numpy as np
     if len(last_werte) < 525600:
         #Skalieren des Lastprofils
-        print("ICH BIN AM SKALIEREN SCURR")
         last_werte_2 = np.divide(last_werte, np.sum(last_werte))
-        last_werte_3 = last_werte_2*jahresstromverbrauch*1000
+        last_werte_3 = last_werte_2*jahresstromverbrauch*1000*4
         print(sum(last_werte_3))
     else:
         last_werte_3 = last_werte[0::15].copy()
@@ -238,6 +237,7 @@ def durchschnittstag_berechnen(pv_werte, last_werte, jahresstromverbrauch):
     #Berechnung des Durchnittstages
     durchschnitsstag_pv = pv_werte2.sum(axis=1) / 365
     durchschnittstag_last = last_werte_4.sum(axis=1) / 365
+    print(durchschnittstag_last[8])
 
     return durchschnitsstag_pv, durchschnittstag_last
 
@@ -404,7 +404,7 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
         if schule == 0:
             #Skalieren des Lastprofils
             leistung_last = np.divide(leistung_last, np.sum(leistung_last))
-            leistung_last = leistung_last * jahresstromverbrauch*1000
+            leistung_last = leistung_last * jahresstromverbrauch*1000*4
             #Errechnen der Energieflüsse
             e_pv2l = np.minimum(leistung_pv_2, leistung_last)
             e_pv2g = leistung_pv_2 - e_pv2l
