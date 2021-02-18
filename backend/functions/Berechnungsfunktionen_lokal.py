@@ -17,9 +17,9 @@ def berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbra
 
         eco_eigenverbrauch = {}
         eco_mieterstrom = oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, geschäftsmodell)
-        [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenverbrauch, kW, kalkZins, einspeiseverguetungVektor, geschäftsmodell, schule, jahresstromverbrauch)
+        [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, vermiedener_netzbezug, stromkosteneinsparung, co2_einsparung] = oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenverbrauch, kW, kalkZins, einspeiseverguetungVektor, geschäftsmodell, schule, jahresstromverbrauch)
         [durchschnittstag_pv, durchschnittstag_last] = durchschnittstag_berechnen(leistung_pv, leistung_last, jahresstromverbrauch)
-        return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last
+        return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last, vermiedener_netzbezug, stromkosteneinsparung, co2_einsparung
 
     elif geschäftsmodell == 2: # Gewerbe oder NWG
         Lastprofile_GW = np.load('D:\\Solarspeichersysteme\\09_Projekte\\2016_PV2City\\2018_10 Leitfaden Eigenverbrauch\\App-Entwicklung\\Unabhaengigkeitsrechner_Python\\Daten Wetter und Last\\Lastprofile_Gewerbe.npy', allow_pickle=True)
@@ -27,9 +27,9 @@ def berechnung(strompreis, kW, strompreissteigerung, kalkZins, jahresstromverbra
 
         eco_mieterstrom= oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, 1)
         eco_eigenverbrauch = oekonomie_vorbereiten(strompreis, kW, strompreissteigerung, i_teilnehmer,spez_kosten_pv, 2)
-        [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad] = oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenverbrauch, kW, kalkZins, einspeiseverguetungVektor, geschäftsmodell, schule, jahresstromverbrauch)
+        [barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, vermiedener_netzbezug, stromkosteneinsparung, co2_einsparung] = oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenverbrauch, kW, kalkZins, einspeiseverguetungVektor, geschäftsmodell, schule, jahresstromverbrauch)
         [durchschnittstag_pv, durchschnittstag_last] = durchschnittstag_berechnen(leistung_pv, leistung_last, jahresstromverbrauch)
-        return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last
+        return barwert_mieterstrom, barwert_eigenverbrauch, eigenverbrauchsanteil, autarkiegrad, durchschnittstag_pv, durchschnittstag_last, vermiedener_netzbezug, stromkosteneinsparung, co2_einsparung
 
     else:
          raise Exception('Fehler in Berechnungsfunktion. Geschäftsmodell falsch übergeben.')
@@ -226,7 +226,6 @@ def durchschnittstag_berechnen(pv_werte, last_werte, jahresstromverbrauch):
         #Skalieren des Lastprofils
         last_werte_2 = np.divide(last_werte, np.sum(last_werte))
         last_werte_3 = last_werte_2*jahresstromverbrauch*1000*4
-        print(sum(last_werte_3))
     else:
         last_werte_3 = last_werte[0::15].copy()
     
@@ -237,7 +236,6 @@ def durchschnittstag_berechnen(pv_werte, last_werte, jahresstromverbrauch):
     #Berechnung des Durchnittstages
     durchschnitsstag_pv = pv_werte2.sum(axis=1) / 365
     durchschnittstag_last = last_werte_4.sum(axis=1) / 365
-    print(durchschnittstag_last[8])
 
     return durchschnitsstag_pv, durchschnittstag_last
 
@@ -390,7 +388,12 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
         nettobarwert_mieterstrom = np.round(npf.npv(kalkulatorischer_zins, gewinn_nettobarwert), 0)
 
         nettobarwert_eigenverbrauch = 0
-        return nettobarwert_mieterstrom, nettobarwert_eigenverbrauch, Eigenverbrauchsanteil, Autarkiegrad
+
+        #Berechnung vermiedener_netzbezug, stromkosteneinsparung, co2_einsparung
+        vermiedener_netzbezug = np.round(np.sum(e_pv2l) / 1000) #kWh
+        stromkosteneinsparung = np.round(vermiedener_netzbezug * (np.sum(strompreis_vektor) / 20)) #Euro
+        co2_einsparung = np.round(vermiedener_netzbezug * 0.570) #kg
+        return nettobarwert_mieterstrom, nettobarwert_eigenverbrauch, Eigenverbrauchsanteil, Autarkiegrad, vermiedener_netzbezug, stromkosteneinsparung, co2_einsparung
 
     #---------------------------------------------------------------------------------------------------------------------------------------------
     elif geschäftsmodell == 2:
@@ -403,30 +406,30 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
         #Berechnung der Energiesummen, je nachdem ob Eigenverbrauchsanteil vorgegeben oder nicht
         if schule == 0:
             #Skalieren des Lastprofils
-            leistung_last = np.divide(leistung_last, np.sum(leistung_last))
-            leistung_last = leistung_last * jahresstromverbrauch*1000*4
+            leistung_last = np.divide(leistung_last*4, np.sum(leistung_last*4))
+            leistung_last = leistung_last * jahresstromverbrauch*1000
             #Errechnen der Energieflüsse
             e_pv2l = np.minimum(leistung_pv_2, leistung_last)
             e_pv2g = leistung_pv_2 - e_pv2l
-            e_g2l = leistung_last - leistung_pv_2 # Nur für Direktstrom relevantt
+            e_g2l = leistung_last - leistung_pv_2 # Nur für Direktstrom relevant
             e_g2l[e_g2l <= 0] = 0
             #Energiesummen
-            summe_e_g2l = np.sum(e_g2l) / (4*1000)
-            summe_e_pv2l = np.sum(e_pv2l) / (4*1000)
-            summe_e_pv2g = np.sum(e_pv2g) / (4*1000)
-            summe_pv = np.sum(leistung_pv_2) / (4*1000)
-            summe_last = np.sum(leistung_last) / (4*1000)
+            summe_e_g2l = np.sum(e_g2l) / (1000)
+            summe_e_pv2l = np.sum(e_pv2l) / (1000)
+            summe_e_pv2g = np.sum(e_pv2g) / (1000)
+            summe_pv = np.sum(leistung_pv_2) / (1000)
+            summe_last = np.sum(leistung_last) / (1000)
             Eigenverbrauchsanteil = np.round((summe_e_pv2l / summe_pv) * 100)
             Autarkiegrad = np.round((summe_e_pv2l / summe_last)*100)
         elif schule == 1:
             #eigenverbrauchsanteil anhand Leitfaden berechnen
-            Eigenverbrauchsanteil = 0.3 * ((kW/jahresstromverbrauch)^(-0.55))
+            Eigenverbrauchsanteil = np.round(0.3 * ((kW/(jahresstromverbrauch/1000))**(-0.55)), 1) * 100
 
-            summe_pv = np.sum(leistung_pv) / (1000 * 60)
+            summe_pv = np.sum(leistung_pv) / (1000*60)
             summe_e_pv2l = summe_pv * Eigenverbrauchsanteil / 100
             summe_e_pv2g = summe_pv - summe_e_pv2l
             summe_e_g2l = np.sum(jahresstromverbrauch - summe_e_pv2l)
-            Autarkiegrad = summe_e_pv2l / jahresstromverbrauch
+            Autarkiegrad = np.round(summe_e_pv2l / jahresstromverbrauch)
 
         #Eigentliche Berechnung
         einspeiseverguetung = (np.minimum(10, kW) / kW * (einspeiseverguetung_vektor[0]/100) \
@@ -439,44 +442,47 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
         #Schleife für Berechnung beider Geschäftsmodelle
         for geschäftsmodell_zähler in range(2):
             if geschäftsmodell_zähler == 0: #Hier wird Mieterstrom berechnet
-                c_mieterstromzuschlag = 0 
-                C_Verwaltung = 100 / 1.19 # Euro pro Jahr und Teilnehmer
-                # Rolle und die damit verbundenen Kosten
-                if betreiber == 'betreiber-0':
-                    c_pacht = 0
+                if schule == 0:
+                    c_mieterstromzuschlag = 0 
+                    C_Verwaltung = 100 / 1.19 # Euro pro Jahr und Teilnehmer
+                    # Rolle und die damit verbundenen Kosten
+                    if betreiber == 'betreiber-0':
+                        c_pacht = 0
+                    else:
+                        c_pacht = kW * 150/20
+                    #Gewinnrechnung
+                    #Nötige Vektoren
+                    umlage_vektor = eco_mieterstrom["umlage"]
+                    i_teilnehmer = eco_mieterstrom["i_teilnehmer"]
+                    strompreis_vektor = eco_mieterstrom["strompreis_vektor"]
+                    c_invest = eco_mieterstrom["invest"]
+                    kalkZins_vektor = np.zeros(20)
+                    kalkZins_vektor[0] = 1
+                    for i in range(19):
+                        kalkZins_vektor[i+1] = kalkZins_vektor[i] + kalkZins_vektor[i] * kalkulatorischer_zins
+                        
+                    betrieb_vektor = np.full((20,), eco_mieterstrom["betrieb"]) * kalkZins_vektor
+                    grundpreis_vektor = np.full((20,), eco_mieterstrom["grundpreis"]) * kalkZins_vektor
+
+                    # Berechnung über 20 Jahre:    
+                    # Annahme, damit der Mieterstrom vermarktet werden kann.
+                    c_Mieterstrompreis = 0.9 * strompreis_vektor
+
+                    # Zusammenrechnen der Kosten
+                    kosten_mieterstrom = -1 * summe_e_g2l*c_Mieterstrompreis / 1.19 \
+                        - betrieb_vektor /1.19 - umlage_vektor*summe_e_pv2l - \
+                        C_Verwaltung*i_teilnehmer - c_pacht
+                    gewinne_mieterstrom = summe_last*c_Mieterstrompreis /1.19 \
+                        + c_mieterstromzuschlag + ersparnis_pv2g \
+                        + grundpreis_vektor * i_teilnehmer / 1.19
+                        # Volleinspeisung vs. MS:
+                    gewinn_pv_20 =  gewinne_mieterstrom + kosten_mieterstrom   
+
+                    gewinn_nettobarwert = np.concatenate([[np.round(-1*c_invest, 0)], gewinn_pv_20])
+                    #ERGEBNIS DIREKTSTROM RECHNUNG!
+                    nettobarwert_mieterstrom = np.round(npf.npv(kalkulatorischer_zins, gewinn_nettobarwert), 0)
                 else:
-                    c_pacht = kW * 150/20
-                #Gewinnrechnung
-                #Nötige Vektoren
-                umlage_vektor = eco_mieterstrom["umlage"]
-                i_teilnehmer = eco_mieterstrom["i_teilnehmer"]
-                strompreis_vektor = eco_mieterstrom["strompreis_vektor"]
-                c_invest = eco_mieterstrom["invest"]
-                kalkZins_vektor = np.zeros(20)
-                kalkZins_vektor[0] = 1
-                for i in range(19):
-                    kalkZins_vektor[i+1] = kalkZins_vektor[i] + kalkZins_vektor[i] * kalkulatorischer_zins
-                    
-                betrieb_vektor = np.full((20,), eco_mieterstrom["betrieb"]) * kalkZins_vektor
-                grundpreis_vektor = np.full((20,), eco_mieterstrom["grundpreis"]) * kalkZins_vektor
-
-                # Berechnung über 20 Jahre:    
-                # Annahme, damit der Mieterstrom vermarktet werden kann.
-                c_Mieterstrompreis = 0.9 * strompreis_vektor
-
-                # Zusammenrechnen der Kosten
-                kosten_mieterstrom = -1 * summe_e_g2l*c_Mieterstrompreis / 1.19 \
-                    - betrieb_vektor /1.19 - umlage_vektor*summe_e_pv2l - \
-                    C_Verwaltung*i_teilnehmer - c_pacht
-                gewinne_mieterstrom = summe_last*c_Mieterstrompreis /1.19 \
-                    + c_mieterstromzuschlag + ersparnis_pv2g \
-                    + grundpreis_vektor * i_teilnehmer / 1.19
-                    # Volleinspeisung vs. MS:
-                gewinn_pv_20 =  gewinne_mieterstrom + kosten_mieterstrom   
-
-                gewinn_nettobarwert = np.concatenate([[np.round(-1*c_invest, 0)], gewinn_pv_20])
-                #ERGEBNIS DIREKTSTROM RECHNUNG!
-                nettobarwert_mieterstrom = np.round(npf.npv(kalkulatorischer_zins, gewinn_nettobarwert), 0)
+                    nettobarwert_mieterstrom = 0
             
             elif geschäftsmodell_zähler == 1: #Hier wird Eigenvberbrauch berechnet
                 #Nötige Vektoren
@@ -503,7 +509,16 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
             else:
                 raise Exception("Fehler in Geschäftsmodell Gewerbe: Interner Berechnungszähler falsch.")
 
-        return nettobarwert_mieterstrom, nettobarwert_eigenverbrauch, Eigenverbrauchsanteil, Autarkiegrad 
+        #Berechnung vermiedener_netzbezug, stromkosteneinsparung, co2_einsparung
+        if schule == 0:
+            vermiedener_netzbezug = np.round(summe_e_pv2l) #kWh
+            stromkosteneinsparung = np.round(vermiedener_netzbezug * (np.sum(strompreis_vektor) / 20)) #Euro
+            co2_einsparung = np.round(vermiedener_netzbezug * 0.570) #kg
+        else:
+            vermiedener_netzbezug = np.round(summe_e_pv2l) #kWh
+            stromkosteneinsparung = np.round(vermiedener_netzbezug * (np.sum(strompreis_vektor) / 20)) #Euro
+            co2_einsparung = np.round(vermiedener_netzbezug * 0.570) #kg
+        return nettobarwert_mieterstrom, nettobarwert_eigenverbrauch, Eigenverbrauchsanteil, Autarkiegrad, vermiedener_netzbezug, stromkosteneinsparung, co2_einsparung
     else:
         raise Exception("Fehler in oekonomie_berechnen. Geschäftsmodell falsch ausgewählt")
 
