@@ -12,13 +12,13 @@ export class DurchschnittstagGraphComponent implements OnInit {
   chartOption: EChartsOption = {
     xAxis: {
       type: 'value',
-      name: 'Minuten',
+      name: 'Viertelstunden-Werte',
       min: 0, 
       max: 1440,
     },
     yAxis: {
       type: 'value',
-      name: 'kW',
+      name: 'W',
     },
     series: [
       {
@@ -44,7 +44,7 @@ export class DurchschnittstagGraphComponent implements OnInit {
 
     option.xAxis = {
       type: 'value',
-      name: 'Minuten',
+      name: 'Viertelstunden-Werte',
       min: 0, 
       max: laenge,
     }

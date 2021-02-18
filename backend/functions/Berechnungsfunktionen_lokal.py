@@ -224,18 +224,17 @@ def durchschnittstag_berechnen(pv_werte, last_werte, jahresstromverbrauch):
     import numpy as np
     if len(last_werte) < 525600:
         #Skalieren des Lastprofils
-        last_werte_2 = np.divide(last_werte, np.sum(last_werte))
-        last_werte_3 = last_werte_2*jahresstromverbrauch*1000*4
+        last_werte_3 = (last_werte*jahresstromverbrauch/1000000)*1000 #in W!
     else:
         last_werte_3 = last_werte[0::15].copy()
     
     pv_werte_2 = pv_werte[0::15].copy()
-    pv_werte2 = np.reshape(pv_werte_2, (96, 365))
-    last_werte_4 = np.reshape(last_werte_3, (96, 365))
-
+    pv_werte_3 = np.reshape(pv_werte_2, (96, 365))
+    last_werte_4 = np.reshape(last_werte_3, (365, 96))
+    
     #Berechnung des Durchnittstages
-    durchschnitsstag_pv = pv_werte2.sum(axis=1) / 365
-    durchschnittstag_last = last_werte_4.sum(axis=1) / 365
+    durchschnitsstag_pv = pv_werte_3.sum(axis=1) / 365
+    durchschnittstag_last = last_werte_4.sum(axis=0) / 365
 
     return durchschnitsstag_pv, durchschnittstag_last
 
@@ -314,6 +313,7 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
         kalkulatorischer_zins /= 100  # Prozent in dezimal
 
         e_pv2l = np.minimum(leistung_pv, leistung_last)  # in Watt!
+        print(e_pv2l)
         e_pv2g = leistung_pv - e_pv2l  # in Watt!
         # Grid to load
         e_g2l = leistung_last - leistung_pv  # in Watt!
@@ -406,19 +406,19 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
         #Berechnung der Energiesummen, je nachdem ob Eigenverbrauchsanteil vorgegeben oder nicht
         if schule == 0:
             #Skalieren des Lastprofils
-            leistung_last = np.divide(leistung_last*4, np.sum(leistung_last*4))
-            leistung_last = leistung_last * jahresstromverbrauch*1000
+            leistung_last = (leistung_last*jahresstromverbrauch/1000000)*1000 #in W!
             #Errechnen der Energieflüsse
             e_pv2l = np.minimum(leistung_pv_2, leistung_last)
             e_pv2g = leistung_pv_2 - e_pv2l
             e_g2l = leistung_last - leistung_pv_2 # Nur für Direktstrom relevant
             e_g2l[e_g2l <= 0] = 0
+            print(e_pv2l)
             #Energiesummen
-            summe_e_g2l = np.sum(e_g2l) / (1000)
-            summe_e_pv2l = np.sum(e_pv2l) / (1000)
-            summe_e_pv2g = np.sum(e_pv2g) / (1000)
-            summe_pv = np.sum(leistung_pv_2) / (1000)
-            summe_last = np.sum(leistung_last) / (1000)
+            summe_e_g2l = np.sum(e_g2l) / (4*1000)
+            summe_e_pv2l = np.sum(e_pv2l) / (4*1000)
+            summe_e_pv2g = np.sum(e_pv2g) / (4*1000)
+            summe_pv = np.sum(leistung_pv_2) / (4*1000)
+            summe_last = np.sum(leistung_last) / (4*1000)
             Eigenverbrauchsanteil = np.round((summe_e_pv2l / summe_pv) * 100)
             Autarkiegrad = np.round((summe_e_pv2l / summe_last)*100)
         elif schule == 1:
@@ -453,7 +453,7 @@ def oekonomie_berechnen(leistung_pv, leistung_last, eco_mieterstrom, eco_eigenve
                     #Gewinnrechnung
                     #Nötige Vektoren
                     umlage_vektor = eco_mieterstrom["umlage"]
-                    i_teilnehmer = eco_mieterstrom["i_teilnehmer"]
+                    i_teilnehmer = 1
                     strompreis_vektor = eco_mieterstrom["strompreis_vektor"]
                     c_invest = eco_mieterstrom["invest"]
                     kalkZins_vektor = np.zeros(20)
